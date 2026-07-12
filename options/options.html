@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>设置 - 问卷自动填写助手</title>
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <div class="options-container">
+    <header class="options-header">
+      <h1>问卷自动填写助手 - 设置</h1>
+      <p class="subtitle">配置个人资料，一键填写各种问卷</p>
+    </header>
+
+    <main class="options-body">
+      <section class="profile-section">
+        <div class="section-header">
+          <h2>资料管理</h2>
+          <div class="profile-actions">
+            <select id="profile-selector" class="profile-selector"></select>
+            <button class="btn btn-outline" id="btn-new-profile">+ 新建</button>
+            <button class="btn btn-danger" id="btn-delete-profile">删除</button>
+          </div>
+        </div>
+
+        <form id="profile-form">
+          <input type="hidden" id="f-profile-name" />
+
+          <div class="form-section">
+            <h2 class="form-section-title">基本信息</h2>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>姓名</label>
+                <input type="text" id="f-name" placeholder="您的姓名" />
+              </div>
+              <div class="form-group">
+                <label>性别</label>
+                <select id="f-gender">
+                  <option value="男">男</option>
+                  <option value="女">女</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>年龄</label>
+                <input type="number" id="f-age" placeholder="年龄" min="1" max="120" />
+              </div>
+              <div class="form-group">
+                <label>出生日期</label>
+                <input type="date" id="f-birthday" />
+              </div>
+              <div class="form-group">
+                <label>所在城市</label>
+                <input type="text" id="f-city" placeholder="如：北京" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h2 class="form-section-title">联系方式</h2>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>手机号</label>
+                <input type="tel" id="f-phone" placeholder="手机号码" />
+              </div>
+              <div class="form-group">
+                <label>邮箱</label>
+                <input type="email" id="f-email" placeholder="电子邮箱" />
+              </div>
+              <div class="form-group">
+                <label>身份证号</label>
+                <input type="text" id="f-idCard" placeholder="身份证号码" />
+              </div>
+              <div class="form-group form-group-full">
+                <label>地址</label>
+                <input type="text" id="f-address" placeholder="详细地址" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h2 class="form-section-title">教育/工作</h2>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>学校</label>
+                <input type="text" id="f-school" placeholder="学校名称" />
+              </div>
+              <div class="form-group">
+                <label>公司</label>
+                <input type="text" id="f-company" placeholder="公司名称" />
+              </div>
+              <div class="form-group">
+                <label>职业</label>
+                <input type="text" id="f-occupation" placeholder="您的职业" />
+              </div>
+              <div class="form-group">
+                <label>部门</label>
+                <input type="text" id="f-department" placeholder="如：研发部" />
+              </div>
+              <div class="form-group">
+                <label>工号/学号</label>
+                <input type="text" id="f-staffId" placeholder="员工编号或学号" />
+              </div>
+              <div class="form-group">
+                <label>收入/月薪</label>
+                <input type="text" id="f-income" placeholder="如：10000" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h2 class="form-section-title">个人信息</h2>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>婚姻状况</label>
+                <select id="f-marital">
+                  <option value="未婚">未婚</option>
+                  <option value="已婚">已婚</option>
+                  <option value="离异">离异</option>
+                  <option value="丧偶">丧偶</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>民族</label>
+                <input type="text" id="f-ethnicity" placeholder="如：汉族" />
+              </div>
+              <div class="form-group">
+                <label>政治面貌</label>
+                <select id="f-political">
+                  <option value="群众">群众</option>
+                  <option value="共青团员">共青团员</option>
+                  <option value="中共党员">中共党员</option>
+                  <option value="民主党派">民主党派</option>
+                  <option value="无党派人士">无党派人士</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>紧急联系人</label>
+                <input type="text" id="f-emergencyContact" placeholder="紧急联系人姓名" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h2 class="form-section-title">其他</h2>
+            <div class="form-grid">
+              <div class="form-group form-group-full">
+                <label>默认建议/意见</label>
+                <textarea id="f-suggestions" rows="3" placeholder="用于建议、意见、备注等开放性问题"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">保存设置</button>
+            <button type="button" class="btn btn-outline" id="btn-reset">恢复默认</button>
+          </div>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>
