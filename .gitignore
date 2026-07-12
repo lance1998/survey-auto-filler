@@ -1,0 +1,7 @@
+node_modules/
+
+test_output.log
+node_modules
+test_extension.js
+package-lock.json
+package.json

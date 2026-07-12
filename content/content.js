@@ -731,6 +731,29 @@
         return p.suggestions;
       }
 
+      // 扩展匹配：天数
+      if (this.matchAny(l, ['天数', '几天', '多少天', 'days', 'duration'])) {
+        return '3';
+      }
+
+      // 扩展匹配：金额
+      if (this.matchAny(l, ['金额', '花费', '预算', '费用', '价格', 'price', 'amount', 'cost'])) {
+        return '100';
+      }
+
+      // 扩展匹配：体重/身高
+      if (this.matchAny(l, ['体重', 'weight'])) {
+        return '65';
+      }
+      if (this.matchAny(l, ['身高', 'height'])) {
+        return '175';
+      }
+
+      // 扩展匹配：邮编
+      if (this.matchAny(l, ['邮编', '邮政编码', 'zip', 'zipcode', 'postal'])) {
+        return '100000';
+      }
+
       // 数字类型输入
       if (field.inputType === 'number') {
         return String(Math.floor(Math.random() * 50) + 18);
@@ -1301,6 +1324,9 @@
       const idx = Math.min(Math.max(0, rating - 1), field.items.length - 1);
       const item = field.items[idx];
       if (item) {
+        item.dispatchEvent(new MouseEvent('mouseover', { bubbles: true, cancelable: true }));
+        item.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+        item.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true }));
         item.click();
         item.dispatchEvent(new Event('click', { bubbles: true }));
         item.dispatchEvent(new Event('change', { bubbles: true }));
@@ -1316,6 +1342,8 @@
           const radio = row.radios[colIdx];
           if (radio) {
             radio.click();
+            radio.dispatchEvent(new Event('click', { bubbles: true }));
+            radio.dispatchEvent(new Event('input', { bubbles: true }));
             radio.dispatchEvent(new Event('change', { bubbles: true }));
           }
         });
@@ -1326,6 +1354,8 @@
           const radio = row.radios[colIdx];
           if (radio) {
             radio.click();
+            radio.dispatchEvent(new Event('click', { bubbles: true }));
+            radio.dispatchEvent(new Event('input', { bubbles: true }));
             radio.dispatchEvent(new Event('change', { bubbles: true }));
           }
         });
