@@ -151,6 +151,20 @@
             </div>
           </div>
 
+          <div class="form-section">
+            <h2 class="form-section-title">AI 助手配置 (DeepSeek)</h2>
+            <div class="form-grid">
+              <div class="form-group form-group-full">
+                <label>API Key</label>
+                <input type="password" id="f-aiApiKey" placeholder="sk-..." />
+              </div>
+              <div class="form-group form-group-full">
+                <label>系统提示词 (System Prompt)</label>
+                <textarea id="f-aiPrompt" rows="4" placeholder="请扮演一个真实的问卷填写者，根据我提供的资料和问题，给出最合理的回答。"></textarea>
+              </div>
+            </div>
+          </div>
+
           <div class="form-actions">
             <button type="submit" class="btn btn-primary">保存设置</button>
             <button type="button" class="btn btn-outline" id="btn-reset">恢复默认</button>

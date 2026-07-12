@@ -53,7 +53,7 @@
   }
 
   function getDefaultProfile() {
-    return { name: '默认', name_field: '张三', gender: '男', age: '25', phone: '13800138000', email: 'zhangsan@example.com', idCard: '110101199001011234', address: '北京市朝阳区某某街道123号', school: '北京大学', company: '某科技有限公司', occupation: '软件工程师', city: '北京', birthday: '1990-01-01', suggestions: '无', income: '10000', marital: '未婚', ethnicity: '汉族', political: '群众', department: '研发部', staffId: '10001', emergencyContact: '张三' };
+    return { name: '默认', name_field: '张三', gender: '男', age: '25', phone: '13800138000', email: 'zhangsan@example.com', idCard: '110101199001011234', address: '北京市朝阳区某某街道123号', school: '北京大学', company: '某科技有限公司', occupation: '软件工程师', city: '北京', birthday: '1990-01-01', suggestions: '无', income: '10000', marital: '未婚', ethnicity: '汉族', political: '群众', department: '研发部', staffId: '10001', emergencyContact: '张三', aiApiKey: '', aiPrompt: '请扮演一个真实的问卷填写者，根据我提供的资料和问题，给出最合理的回答。' };
   }
 
   async function detectPlatform() {
@@ -112,6 +112,15 @@
     btnFill.innerHTML = '<span class="loading-spinner"></span> 填写中...';
     document.body.classList.add('loading');
     fillStatus.style.display = 'none';
+
+    if (currentMode === 'ai' && (!currentProfile || !currentProfile.aiApiKey)) {
+      showStatus('warning', '请配置 API Key', '在使用 AI 模式前，请在设置中配置 DeepSeek API Key。');
+      btnFill.disabled = false;
+      btnFill.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> 一键填写';
+      document.body.classList.remove('loading');
+      return;
+    }
+
     chrome.tabs.sendMessage(tab.id, { action: 'fillAll', data: { profile: currentProfile, mode: currentMode } }, (response) => {
       btnFill.disabled = false;
       btnFill.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> 一键填写';

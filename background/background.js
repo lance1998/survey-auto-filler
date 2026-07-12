@@ -110,6 +110,40 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
     return true;
   }
+
+  if (message.type === 'CALL_DEEPSEEK_API') {
+    const { apiKey, prompt, userMessage } = message.data;
+
+    fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [
+          { role: 'system', content: prompt || '请扮演一个真实的问卷填写者，根据我提供的资料和问题，给出最合理的回答。请只返回JSON，不要包含markdown语法和其他内容。' },
+          { role: 'user', content: userMessage }
+        ],
+        response_format: { type: 'json_object' }
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.choices && data.choices.length > 0) {
+        sendResponse({ success: true, result: data.choices[0].message.content });
+      } else {
+        sendResponse({ success: false, error: 'API响应格式错误: ' + JSON.stringify(data) });
+      }
+    })
+    .catch(error => {
+      console.error('[问卷助手] AI请求失败:', error);
+      sendResponse({ success: false, error: error.message });
+    });
+
+    return true;
+  }
 });
 
 function sendMessageToTab(tabId, message) {

@@ -1073,6 +1073,56 @@
     },
   };
 
+  // ==================== AI 智能解析器 ====================
+  const AiResolver = {
+    async resolveBatch(fields, profile) {
+      if (!fields || fields.length === 0) return {};
+
+      const promptData = fields.map(f => {
+        const data = {
+          name: f.name || f.label || 'unknown',
+          label: f.label,
+          type: f.type
+        };
+        if (f.options) {
+          data.options = f.options.map(o => o.text || o.value);
+        }
+        return data;
+      });
+
+      const userMessage = `当前用户资料：${JSON.stringify(profile)}
+请根据上述资料，为以下问卷字段生成合适的答案：
+${JSON.stringify(promptData, null, 2)}
+请返回一个 JSON 对象，其中键是字段的 name，值是你的回答。
+如果是单选/多选，值请返回匹配的选项文本；如果是多选，请返回数组；如果是星级(star)/评分，请返回数字。`;
+
+      try {
+        const response = await new Promise((resolve, reject) => {
+          chrome.runtime.sendMessage({
+            type: 'CALL_DEEPSEEK_API',
+            data: {
+              apiKey: profile.aiApiKey,
+              prompt: profile.aiPrompt,
+              userMessage: userMessage
+            }
+          }, (res) => {
+            if (res && res.success) {
+              resolve(res.result);
+            } else {
+              reject(new Error(res ? res.error : '未知错误'));
+            }
+          });
+        });
+
+        const jsonStr = response.replace(/^```json\n?/, '').replace(/\n?```$/, '');
+        return JSON.parse(jsonStr);
+      } catch (e) {
+        console.error('[问卷助手] AI 批量解析失败:', e);
+        return {};
+      }
+    }
+  };
+
   // ==================== 表单填写器 ====================
   const FormFiller = {
     filledCount: 0,
@@ -1088,8 +1138,14 @@
       const newFields = fields.filter(f => !this.isAlreadyFilled(f));
       this.totalCount = fields.length;
 
+      let aiAnswers = {};
+      if (mode === 'ai' && newFields.length > 0) {
+        StatusPanel.update('AI 正在思考中...', 'loading');
+        aiAnswers = await AiResolver.resolveBatch(newFields, profile);
+      }
+
       for (const field of newFields) {
-        await this.fillField(field, profile, mode);
+        await this.fillField(field, profile, mode, aiAnswers);
         this.filledCount++;
         this.markFilled(field);
         if (this.fillDelay > 0) {
@@ -1157,13 +1213,32 @@
       }
     },
 
-    async fillField(field, profile, mode) {
+    async fillField(field, profile, mode, aiAnswers = {}) {
       // 跳过已经有值的字段（避免覆盖联动逻辑已设置的值）
       if (FieldDetector.hasValue(field)) {
         return false;
       }
 
-      const answer = AnswerResolver.resolve(field, profile, mode);
+      let answer;
+      const aiKey = field.name || field.label || 'unknown';
+      if (mode === 'ai' && aiAnswers[aiKey] !== undefined) {
+         const aiValue = aiAnswers[aiKey];
+         if (field.type === 'radio') {
+            const match = field.options.find(o => o.text.includes(aiValue) || String(aiValue).includes(o.text));
+            answer = match ? { option: match } : { option: field.options[0] };
+         } else if (field.type === 'checkbox-group') {
+            const arr = Array.isArray(aiValue) ? aiValue : [aiValue];
+            const matched = field.options.filter(o => arr.some(v => o.text.includes(v) || String(v).includes(o.text)));
+            answer = matched.length > 0 ? { options: matched } : null;
+         } else if (field.type === 'select') {
+            answer = { value: aiValue, text: aiValue };
+         } else {
+            answer = aiValue;
+         }
+      } else {
+         answer = AnswerResolver.resolve(field, profile, mode);
+      }
+
       if (answer === null || answer === undefined) return false;
 
       try {

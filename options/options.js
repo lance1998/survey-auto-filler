@@ -43,7 +43,7 @@
     'f-phone', 'f-email', 'f-idCard', 'f-address',
     'f-school', 'f-company', 'f-occupation', 'f-department', 'f-staffId', 'f-income',
     'f-marital', 'f-ethnicity', 'f-political', 'f-emergencyContact',
-    'f-suggestions',
+    'f-suggestions', 'f-aiApiKey', 'f-aiPrompt'
   ];
 
   const FIELD_KEYS = {
@@ -68,6 +68,8 @@
     'f-political': 'political',
     'f-emergencyContact': 'emergencyContact',
     'f-suggestions': 'suggestions',
+    'f-aiApiKey': 'aiApiKey',
+    'f-aiPrompt': 'aiPrompt',
   };
 
   init();
@@ -153,7 +155,7 @@
       phone: '', email: '', idCard: '', address: '', school: '', company: '',
       occupation: '', city: '', birthday: '', suggestions: '', income: '',
       marital: '未婚', ethnicity: '', political: '群众', department: '',
-      staffId: '', emergencyContact: '',
+      staffId: '', emergencyContact: '', aiApiKey: '', aiPrompt: '请扮演一个真实的问卷填写者，根据我提供的资料和问题，给出最合理的回答。'
     };
     profiles.push(newProfile);
     activeProfileIndex = profiles.length - 1;
