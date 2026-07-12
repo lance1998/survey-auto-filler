@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>问卷自动填写助手</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="popup-container">
+    <header class="popup-header">
+      <div class="header-left">
+        <img src="../icons/icon48.png" alt="logo" class="header-logo" />
+        <span class="header-title">问卷填写助手</span>
+      </div>
+      <button class="btn-icon" id="btn-settings" title="设置">\u2699\uFE0F</button>
+    </header>
+
+    <section class="popup-body">
+      <div class="mode-switcher">
+        <button class="mode-btn active" data-mode="profile">\u{1F464} 个人资料</button>
+        <button class="mode-btn" data-mode="random">\u{1F3B2} 随机填写</button>
+      </div>
+
+      <div class="profile-select-group">
+        <label class="profile-label">当前资料</label>
+        <select id="profile-select" class="profile-select"></select>
+      </div>
+
+      <div class="auto-fill-toggle" style="display: none;">
+        <label class="switch">
+          <input type="checkbox" id="auto-fill-switch" />
+          <span class="switch-slider"></span>
+        </label>
+        <span class="toggle-label">打开问卷页自动填写</span>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn-primary" id="btn-fill-all">\u26A1 一键填写</button>
+        <button class="btn-secondary" id="btn-detect">\u{1F50D} 检测字段</button>
+      </div>
+
+      <div class="status-area" id="status-area">
+        <div class="status-placeholder">\u{1F4CB} 点击「检测字段」查看问卷信息</div>
+      </div>
+
+      <div class="field-list-container" id="field-list-container" style="display: none;">
+        <div class="field-list-header">
+          <span class="field-list-title">\u{1F4DD} 检测到的字段</span>
+          <span class="field-list-count" id="field-count"></span>
+        </div>
+        <div class="field-list" id="field-list"></div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>快捷键：Alt+F 填写 | Alt+D 检测</span>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
