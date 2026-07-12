@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>测试问卷 - 问卷自动填写助手</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #f0f2f5;
+      color: #2d3436;
+      padding: 20px;
+    }
+    .survey-container {
+      max-width: 680px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      padding: 40px;
+    }
+    .survey-header {
+      text-align: center;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 2px solid #e3f2fd;
+    }
+    .survey-header h1 {
+      font-size: 24px;
+      color: #2d3436;
+      margin-bottom: 8px;
+    }
+    .survey-header p {
+      font-size: 14px;
+      color: #636e72;
+    }
+    .question {
+      margin-bottom: 28px;
+      padding: 16px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .question:last-child { border-bottom: none; }
+    .question-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #2d3436;
+    }
+    .question-title .required { color: #F44336; margin-left: 2px; }
+    .question-input, .question-textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #dfe6e9;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .question-input:focus, .question-textarea:focus {
+      border-color: #4A90D9;
+    }
+    .question-textarea { min-height: 80px; resize: vertical; }
+    .option-group { display: flex; flex-direction: column; gap: 10px; }
+    .option-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .option-item:hover { background: #f5f6fa; }
+    .option-item input { cursor: pointer; }
+    .option-item label { cursor: pointer; font-size: 14px; }
+    .option-inline { display: flex; gap: 20px; flex-wrap: wrap; }
+    .option-inline .option-item { padding: 6px 10px; }
+    .question-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .range-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #4A90D9;
+      margin-left: 8px;
+    }
+    .btn-submit {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #4A90D9 0%, #357AbD 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: all 0.2s;
+    }
+    .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(74,144,217,0.4); }
+    .section-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #636e72;
+      margin-bottom: 8px;
+      padding-top: 16px;
+      border-top: 1px dashed #e0e0e0;
+    }
+    .section-label:first-of-type { border-top: none; padding-top: 0; }
+    .test-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      background: #e3f2fd;
+      color: #4A90D9;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .star-rating {
+      display: inline-flex;
+      gap: 4px;
+      cursor: pointer;
+      vertical-align: middle;
+      margin-left: 10px;
+    }
+    .star-item {
+      font-size: 24px;
+      color: #dfe6e9;
+      transition: color 0.15s;
+    }
+    .star-item:hover,
+    .star-rating:hover .star-item {
+      color: #f9a825;
+    }
+    .star-rating:hover .star-item:hover ~ .star-item {
+      color: #dfe6e9;
+    }
+    .form-hint {
+      font-size: 12px;
+      color: #b2bec3;
+      margin-top: 4px;
+    }
+    .matrix-table input[type="radio"] {
+      cursor: pointer;
+      transform: scale(1.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="survey-container">
+    <div class="survey-header">
+      <h1>用户满意度调查问卷</h1>
+      <p>感谢您参与本次调查，您的意见对我们非常重要</p>
+    </div>
+
+    <!-- ========== 基本信息 ========== -->
+    <div class="section-label">基本信息</div>
+
+    <div class="question">
+      <div class="question-title">1. 您的姓名 <span class="required">*</span></div>
+      <input type="text" class="question-input" id="q-name" placeholder="请输入您的姓名" />
+    </div>
+
+    <div class="question">
+      <div class="question-title">2. 性别 <span class="required">*</span></div>
+      <div class="option-group">
+        <div class="option-item">
+          <input type="radio" id="q-gender-m" name="q-gender" value="男" />
+          <label for="q-gender-m">男</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-gender-f" name="q-gender" value="女" />
+          <label for="q-gender-f">女</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="question-title">3. 您的年龄 <span class="required">*</span></div>
+      <input type="number" class="question-input" id="q-age" placeholder="请输入年龄" min="1" max="120" />
+    </div>
+
+    <div class="question">
+      <div class="question-title">4. 联系电话</div>
+      <input type="tel" class="question-input" id="q-phone" placeholder="请输入手机号码" />
+    </div>
+
+    <div class="question">
+      <div class="question-title">5. 电子邮箱</div>
+      <input type="email" class="question-input" id="q-email" placeholder="请输入邮箱地址" />
+    </div>
+
+    <div class="question">
+      <div class="question-title">6. 所在城市</div>
+      <select class="question-input" id="q-city">
+        <option value="">请选择城市</option>
+        <option value="beijing">北京</option>
+        <option value="shanghai">上海</option>
+        <option value="guangzhou">广州</option>
+        <option value="shenzhen">深圳</option>
+        <option value="hangzhou">杭州</option>
+        <option value="chengdu">成都</option>
+      </select>
+    </div>
+
+    <div class="question">
+      <div class="question-title">7. 最高学历</div>
+      <select class="question-input" id="q-education">
+        <option value="">请选择学历</option>
+        <option value="highschool">高中/中专</option>
+        <option value="college">大专</option>
+        <option value="bachelor">本科</option>
+        <option value="master">硕士</option>
+        <option value="phd">博士</option>
+      </select>
+    </div>
+
+    <div class="question">
+      <div class="question-title">8. 家庭地址</div>
+      <input type="text" class="question-input" id="q-address" placeholder="请输入详细地址" />
+    </div>
+
+    <!-- ========== 满意度评价 ========== -->
+    <div class="section-label">满意度评价</div>
+
+    <div class="question">
+      <div class="question-title">9. 您对我们服务的整体满意度如何？ <span class="required">*</span></div>
+      <div class="option-group">
+        <div class="option-item">
+          <input type="radio" id="q-sat-1" name="q-satisfaction" value="1" />
+          <label for="q-sat-1">非常不满意</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-sat-2" name="q-satisfaction" value="2" />
+          <label for="q-sat-2">不满意</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-sat-3" name="q-satisfaction" value="3" />
+          <label for="q-sat-3">一般</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-sat-4" name="q-satisfaction" value="4" />
+          <label for="q-sat-4">满意</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-sat-5" name="q-satisfaction" value="5" />
+          <label for="q-sat-5">非常满意</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="question-title">10. 您是否同意以下说法："该产品值得推荐给朋友" <span class="required">*</span></div>
+      <div class="option-group">
+        <div class="option-item">
+          <input type="radio" id="q-agree-1" name="q-agree" value="1" />
+          <label for="q-agree-1">非常不同意</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-agree-2" name="q-agree" value="2" />
+          <label for="q-agree-2">不同意</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-agree-3" name="q-agree" value="3" />
+          <label for="q-agree-3">中立</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-agree-4" name="q-agree" value="4" />
+          <label for="q-agree-4">同意</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-agree-5" name="q-agree" value="5" />
+          <label for="q-agree-5">非常同意</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="question-title">11. 请为我们的产品质量打分（1-10分）</div>
+      <div class="option-inline">
+        <div class="option-item">
+          <input type="radio" id="q-rate-1" name="q-rating" value="1" />
+          <label for="q-rate-1">1</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-rate-2" name="q-rating" value="2" />
+          <label for="q-rate-2">2</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-rate-3" name="q-rating" value="3" />
+          <label for="q-rate-3">3</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-rate-4" name="q-rating" value="4" />
+          <label for="q-rate-4">4</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-rate-5" name="q-rating" value="5" />
+          <label for="q-rate-5">5</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-rate-6" name="q-rating" value="6" />
+          <label for="q-rate-6">6</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-rate-7" name="q-rating" value="7" />
+          <label for="q-rate-7">7</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-rate-8" name="q-rating" value="8" />
+          <label for="q-rate-8">8</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-rate-9" name="q-rating" value="9" />
+          <label for="q-rate-9">9</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-rate-10" name="q-rating" value="10" />
+          <label for="q-rate-10">10</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="question-title">12. 您使用我们产品的频率是？</div>
+      <div class="option-group">
+        <div class="option-item">
+          <input type="radio" id="q-freq-1" name="q-frequency" value="daily" />
+          <label for="q-freq-1">每天</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-freq-2" name="q-frequency" value="weekly" />
+          <label for="q-freq-2">每周</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-freq-3" name="q-frequency" value="monthly" />
+          <label for="q-freq-3">每月</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-freq-4" name="q-frequency" value="rarely" />
+          <label for="q-freq-4">很少</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-freq-5" name="q-frequency" value="never" />
+          <label for="q-freq-5">从不</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="question-title">13. 您是否了解我们的会员计划？</div>
+      <div class="option-inline">
+        <div class="option-item">
+          <input type="radio" id="q-know-1" name="q-know" value="yes" />
+          <label for="q-know-1">是</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-know-2" name="q-know" value="no" />
+          <label for="q-know-2">否</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== 多选题 ========== -->
+    <div class="section-label">多选题</div>
+
+    <div class="question">
+      <div class="question-title">14. 您通过哪些渠道了解我们的产品？（可多选）</div>
+      <div class="option-group">
+        <div class="option-item">
+          <input type="checkbox" id="q-ch-1" name="q-channels" value="search" />
+          <label for="q-ch-1">搜索引擎</label>
+        </div>
+        <div class="option-item">
+          <input type="checkbox" id="q-ch-2" name="q-channels" value="social" />
+          <label for="q-ch-2">社交媒体</label>
+        </div>
+        <div class="option-item">
+          <input type="checkbox" id="q-ch-3" name="q-channels" value="friend" />
+          <label for="q-ch-3">朋友推荐</label>
+        </div>
+        <div class="option-item">
+          <input type="checkbox" id="q-ch-4" name="q-channels" value="ad" />
+          <label for="q-ch-4">广告</label>
+        </div>
+        <div class="option-item">
+          <input type="checkbox" id="q-ch-5" name="q-channels" value="other" />
+          <label for="q-ch-5">其他</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="question-title">15. 您认为我们产品哪些方面做得好？（可多选）</div>
+      <div class="option-group">
+        <div class="option-item">
+          <input type="checkbox" id="q-good-1" name="q-good" value="quality" />
+          <label for="q-good-1">质量好</label>
+        </div>
+        <div class="option-item">
+          <input type="checkbox" id="q-good-2" name="q-good" value="service" />
+          <label for="q-good-2">服务好</label>
+        </div>
+        <div class="option-item">
+          <input type="checkbox" id="q-good-3" name="q-good" value="speed" />
+          <label for="q-good-3">速度快</label>
+        </div>
+        <div class="option-item">
+          <input type="checkbox" id="q-good-4" name="q-good" value="price" />
+          <label for="q-good-4">价格合理</label>
+        </div>
+        <div class="option-item">
+          <input type="checkbox" id="q-good-5" name="q-good" value="design" />
+          <label for="q-good-5">设计美观</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="question">
+      <div class="question-title">16. 您是否同意接收我们的产品更新通知？</div>
+      <div class="option-item">
+        <input type="checkbox" id="q-consent" name="q-consent" />
+        <label for="q-consent">是的，我同意接收产品更新通知</label>
+      </div>
+    </div>
+
+    <!-- ========== 开放性问题 ========== -->
+    <div class="section-label">开放性问题</div>
+
+    <div class="question">
+      <div class="question-title">17. 您的职业是什么？</div>
+      <input type="text" class="question-input" id="q-occupation" placeholder="请输入您的职业" />
+    </div>
+
+    <div class="question">
+      <div class="question-title">18. 您所在的公司/学校名称</div>
+      <input type="text" class="question-input" id="q-org" placeholder="请输入公司或学校名称" />
+    </div>
+
+    <div class="question">
+      <div class="question-title">19. 您对我们产品有什么建议或意见？</div>
+      <textarea class="question-textarea" id="q-suggestions" placeholder="请输入您的建议..."></textarea>
+    </div>
+
+    <div class="question">
+      <div class="question-title">20. 您的出生日期</div>
+      <input type="date" class="question-input" id="q-birthday" />
+    </div>
+
+    <div class="question">
+      <div class="question-title">21. 请用 1-100 的滑块评价您的生活满意度</div>
+      <input type="range" id="q-life-range" min="1" max="100" value="50" style="width: 100%;" />
+      <span class="range-value" id="q-life-value">50</span>
+    </div>
+
+    <!-- ========== 条件联动题（测试核心） ========== -->
+    <div class="section-label">条件联动题 <span class="test-badge">联动测试</span></div>
+
+    <div class="question" id="q-work-status-block">
+      <div class="question-title">22. 您目前是否有工作？ <span class="required">*</span></div>
+      <div class="option-inline">
+        <div class="option-item">
+          <input type="radio" id="q-work-yes" name="q-work" value="yes" />
+          <label for="q-work-yes">是</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-work-no" name="q-work" value="no" />
+          <label for="q-work-no">否</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 选择"是"后显示 -->
+    <div class="question" id="q-work-detail" style="display: none;">
+      <div class="question-title">22a. 请填写您的工作信息</div>
+      <div class="question-grid">
+        <input type="text" class="question-input" id="q-company-name" placeholder="公司名称" />
+        <select class="question-input" id="q-industry">
+          <option value="">请选择行业</option>
+          <option value="tech">互联网/IT</option>
+          <option value="finance">金融</option>
+          <option value="education">教育</option>
+          <option value="healthcare">医疗</option>
+          <option value="manufacturing">制造业</option>
+          <option value="other">其他</option>
+        </select>
+      </div>
+      <div class="question-title" style="margin-top: 12px;">您对目前工作的满意度？</div>
+      <div class="option-inline">
+        <div class="option-item">
+          <input type="radio" id="q-wsat-1" name="q-work-sat" value="1" />
+          <label for="q-wsat-1">不满意</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-wsat-2" name="q-work-sat" value="2" />
+          <label for="q-wsat-2">一般</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-wsat-3" name="q-work-sat" value="3" />
+          <label for="q-wsat-3">满意</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-wsat-4" name="q-work-sat" value="4" />
+          <label for="q-wsat-4">非常满意</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 选择"否"后显示 -->
+    <div class="question" id="q-no-work-detail" style="display: none;">
+      <div class="question-title">22b. 您目前的状态是？</div>
+      <div class="option-group">
+        <div class="option-item">
+          <input type="radio" id="q-status-student" name="q-nostatus" value="student" />
+          <label for="q-status-student">在校学生</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-status-home" name="q-nostatus" value="home" />
+          <label for="q-status-home">待业在家</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-status-retire" name="q-nostatus" value="retire" />
+          <label for="q-status-retire">已退休</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-status-other" name="q-nostatus" value="other" />
+          <label for="q-status-other">其他</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="question" id="q-purchase-block">
+      <div class="question-title">23. 过去一年是否购买过我们的产品？ <span class="required">*</span></div>
+      <div class="option-inline">
+        <div class="option-item">
+          <input type="radio" id="q-purchase-yes" name="q-purchase" value="yes" />
+          <label for="q-purchase-yes">是</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-purchase-no" name="q-purchase" value="no" />
+          <label for="q-purchase-no">否</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 购买过 → 追问购买渠道和评价 -->
+    <div class="question" id="q-purchase-detail" style="display: none;">
+      <div class="question-title">23a. 您通过什么渠道购买的？（可多选）</div>
+      <div class="option-group">
+        <div class="option-item">
+          <input type="checkbox" id="q-pch-1" name="q-pchannels" value="online" />
+          <label for="q-pch-1">线上商城</label>
+        </div>
+        <div class="option-item">
+          <input type="checkbox" id="q-pch-2" name="q-pchannels" value="offline" />
+          <label for="q-pch-2">线下门店</label>
+        </div>
+        <div class="option-item">
+          <input type="checkbox" id="q-pch-3" name="q-pchannels" value="agent" />
+          <label for="q-pch-3">代理商</label>
+        </div>
+      </div>
+      <div class="question-title" style="margin-top: 12px;">23b. 对购买体验的满意度？</div>
+      <div class="option-group">
+        <div class="option-item">
+          <input type="radio" id="q-pch-sat-1" name="q-pch-sat" value="1" />
+          <label for="q-pch-sat-1">非常不满意</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-pch-sat-2" name="q-pch-sat" value="2" />
+          <label for="q-pch-sat-2">不满意</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-pch-sat-3" name="q-pch-sat" value="3" />
+          <label for="q-pch-sat-3">一般</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-pch-sat-4" name="q-pch-sat" value="4" />
+          <label for="q-pch-sat-4">满意</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-pch-sat-5" name="q-pch-sat" value="5" />
+          <label for="q-pch-sat-5">非常满意</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 没购买过 → 追问原因 -->
+    <div class="question" id="q-no-purchase-detail" style="display: none;">
+      <div class="question-title">23c. 没有购买的主要原因是？</div>
+      <div class="option-group">
+        <div class="option-item">
+          <input type="radio" id="q-np-1" name="q-no-purchase-reason" value="price" />
+          <label for="q-np-1">价格太高</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-np-2" name="q-no-purchase-reason" value="unknown" />
+          <label for="q-np-2">不了解产品</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-np-3" name="q-no-purchase-reason" value="no-need" />
+          <label for="q-np-3">不需要</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-np-4" name="q-no-purchase-reason" value="competitor" />
+          <label for="q-np-4">使用了竞品</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="question" id="q-recommend-block">
+      <div class="question-title">24. 您是否愿意将我们的产品推荐给朋友？</div>
+      <div class="option-inline">
+        <div class="option-item">
+          <input type="radio" id="q-rec-yes" name="q-recommend" value="yes" />
+          <label for="q-rec-yes">是</label>
+        </div>
+        <div class="option-item">
+          <input type="radio" id="q-rec-no" name="q-recommend" value="no" />
+          <label for="q-rec-no">否</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 愿意推荐 → 追问推荐理由 -->
+    <div class="question" id="q-recommend-detail" style="display: none;">
+      <div class="question-title">24a. 您愿意推荐的主要原因？（可多选）</div>
+      <div class="option-group">
+        <div class="option-item">
+          <input type="checkbox" id="q-rec-r1" name="q-rec-reason" value="quality" />
+          <label for="q-rec-r1">质量好</label>
+        </div>
+        <div class="option-item">
+          <input type="checkbox" id="q-rec-r2" name="q-rec-reason" value="price" />
+          <label for="q-rec-r2">性价比高</label>
+        </div>
+        <div class="option-item">
+          <input type="checkbox" id="q-rec-r3" name="q-rec-reason" value="service" />
+          <label for="q-rec-r3">服务好</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 星级评分题 -->
+    <div class="question">
+      <div class="question-title">25. 请为我们的客服态度评分 <span class="star-rating" data-star data-name="q-service-star">
+        <span class="star-item" data-value="1">★</span>
+        <span class="star-item" data-value="2">★</span>
+        <span class="star-item" data-value="3">★</span>
+        <span class="star-item" data-value="4">★</span>
+        <span class="star-item" data-value="5">★</span>
+      </span></div>
+      <div class="form-hint">1星=非常不满意，5星=非常满意</div>
+    </div>
+
+    <!-- 矩阵/量表题 -->
+    <div class="question">
+      <div class="question-title">26. 请对以下方面进行评价</div>
+      <table class="matrix-table" style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="text-align:left; padding:8px; border-bottom:2px solid #e0e0e0; font-size:13px;">评价维度</th>
+            <th style="padding:8px; border-bottom:2px solid #e0e0e0; font-size:12px; color:#636e72;">非常不满意</th>
+            <th style="padding:8px; border-bottom:2px solid #e0e0e0; font-size:12px; color:#636e72;">不满意</th>
+            <th style="padding:8px; border-bottom:2px solid #e0e0e0; font-size:12px; color:#636e72;">一般</th>
+            <th style="padding:8px; border-bottom:2px solid #e0e0e0; font-size:12px; color:#636e72;">满意</th>
+            <th style="padding:8px; border-bottom:2px solid #e0e0e0; font-size:12px; color:#636e72;">非常满意</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:8px; border-bottom:1px solid #f0f0f0; font-size:13px;">产品质量</td>
+            <td style="text-align:center; padding:8px; border-bottom:1px solid #f0f0f0;"><input type="radio" name="matrix-q1" value="1" /></td>
+            <td style="text-align:center; padding:8px; border-bottom:1px solid #f0f0f0;"><input type="radio" name="matrix-q1" value="2" /></td>
+            <td style="text-align:center; padding:8px; border-bottom:1px solid #f0f0f0;"><input type="radio" name="matrix-q1" value="3" /></td>
+            <td style="text-align:center; padding:8px; border-bottom:1px solid #f0f0f0;"><input type="radio" name="matrix-q1" value="4" /></td>
+            <td style="text-align:center; padding:8px; border-bottom:1px solid #f0f0f0;"><input type="radio" name="matrix-q1" value="5" /></td>
+          </tr>
+          <tr>
+            <td style="padding:8px; border-bottom:1px solid #f0f0f0; font-size:13px;">服务态度</td>
+            <td style="text-align:center; padding:8px; border-bottom:1px solid #f0f0f0;"><input type="radio" name="matrix-q2" value="1" /></td>
+            <td style="text-align:center; padding:8px; border-bottom:1px solid #f0f0f0;"><input type="radio" name="matrix-q2" value="2" /></td>
+            <td style="text-align:center; padding:8px; border-bottom:1px solid #f0f0f0;"><input type="radio" name="matrix-q2" value="3" /></td>
+            <td style="text-align:center; padding:8px; border-bottom:1px solid #f0f0f0;"><input type="radio" name="matrix-q2" value="4" /></td>
+            <td style="text-align:center; padding:8px; border-bottom:1px solid #f0f0f0;"><input type="radio" name="matrix-q2" value="5" /></td>
+          </tr>
+          <tr>
+            <td style="padding:8px; border-bottom:1px solid #f0f0f0; font-size:13px;">配送速度</td>
+            <td style="text-align:center; padding:8px; border-bottom:1px solid #f0f0f0;"><input type="radio" name="matrix-q3" value="1" /></td>
+            <td style="text-align:center; padding:8px; border-bottom:1px solid #f0f0f0;"><input type="radio" name="matrix-q3" value="2" /></td>
+            <td style="text-align:center; padding:8px; border-bottom:1px solid #f0f0f0;"><input type="radio" name="matrix-q3" value="3" /></td>
+            <td style="text-align:center; padding:8px; border-bottom:1px solid #f0f0f0;"><input type="radio" name="matrix-q3" value="4" /></td>
+            <td style="text-align:center; padding:8px; border-bottom:1px solid #f0f0f0;"><input type="radio" name="matrix-q3" value="5" /></td>
+          </tr>
+          <tr>
+            <td style="padding:8px; font-size:13px;">价格合理性</td>
+            <td style="text-align:center; padding:8px;"><input type="radio" name="matrix-q4" value="1" /></td>
+            <td style="text-align:center; padding:8px;"><input type="radio" name="matrix-q4" value="2" /></td>
+            <td style="text-align:center; padding:8px;"><input type="radio" name="matrix-q4" value="3" /></td>
+            <td style="text-align:center; padding:8px;"><input type="radio" name="matrix-q4" value="4" /></td>
+            <td style="text-align:center; padding:8px;"><input type="radio" name="matrix-q4" value="5" /></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <button class="btn-submit" type="button" onclick="alert('测试问卷 - 提交按钮（仅用于测试）')">提交问卷</button>
+  </div>
+
+  <script>
+    // 滑块值显示
+    document.getElementById('q-life-range').addEventListener('input', function(e) {
+      document.getElementById('q-life-value').textContent = e.target.value;
+    });
+
+    // ========== 条件联动逻辑 ==========
+
+    // Q22: 是否有工作 → 展开追问
+    document.querySelectorAll('input[name="q-work"]').forEach(function(radio) {
+      radio.addEventListener('change', function() {
+        document.getElementById('q-work-detail').style.display = this.value === 'yes' ? 'block' : 'none';
+        document.getElementById('q-no-work-detail').style.display = this.value === 'no' ? 'block' : 'none';
+      });
+    });
+
+    // Q23: 是否购买过 → 展开追问
+    document.querySelectorAll('input[name="q-purchase"]').forEach(function(radio) {
+      radio.addEventListener('change', function() {
+        document.getElementById('q-purchase-detail').style.display = this.value === 'yes' ? 'block' : 'none';
+        document.getElementById('q-no-purchase-detail').style.display = this.value === 'no' ? 'block' : 'none';
+      });
+    });
+
+    // Q24: 是否愿意推荐 → 展开追问
+    document.querySelectorAll('input[name="q-recommend"]').forEach(function(radio) {
+      radio.addEventListener('change', function() {
+        document.getElementById('q-recommend-detail').style.display = this.value === 'yes' ? 'block' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>
